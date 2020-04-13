@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from helpers import salting
 from flask_bcrypt import Bcrypt
+from flask_login import login_user, current_user, LoginManager, UserMixin, logout_user
+
 app= Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']='mysql://baf5f9532c112a:3706b1a5@eu-cdbr-west-02.cleardb.net/heroku_f500c00e9456035'#database link
 engine = create_engine('mysql://baf5f9532c112a:3706b1a5@eu-cdbr-west-02.cleardb.net/heroku_f500c00e9456035')
@@ -10,8 +12,11 @@ connection= engine.raw_connection()
 cursor= connection.cursor()
 db=SQLAlchemy(app)
 bcrypt=Bcrypt(app)
-
-class User(db.Model):
+login_manage= LoginManager(app)
+@login_manage.user_loader
+def load_user(id):
+    return User.query.get(int(id))
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username= db.Column(db.String(100), nullable=False, unique=True)
     email= db.Column(db.String(120), nullable=False, unique=False)
@@ -20,10 +25,13 @@ class User(db.Model):
 db.create_all()
 @app.route('/', methods=['GET'])
 def index():
+    
     return render_template('index.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    if current_user.is_authenticated:
+        return redirect(url_for('account'))
     if request.method=='POST':
         _username= request.form['username']
         _email= request.form['email']
@@ -44,27 +52,34 @@ def signup():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('account'))
     if request.method=='POST':
         _username= request.form['username']
         _password= request.form['password']
         
         _password= salting(_password)
-        #_password= bcrypt.generate_password_hash(_password)
-        #_password=_password.decode('utf-8')
         user_query=User.query.filter(User.username==_username)
         user=user_query.first()
         ans=bcrypt.check_password_hash(user.password, _password )
-        print(ans)
-        
-        print(user.password)
         if user and ans:
             session['logged_in'] = True
-            return 'login succesful'
+            login_user(user)
+            return redirect('account')
         else:
-            return('wrong password!')
+            flash('Login Unsuccessful!')
     return render_template('login.html')
 
-    
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect('login')
+
+@app.route('/account', methods=['GET', 'POST'])
+def account():
+    return render_template('index.html')
+
+
 
 if __name__=='__main__':
     app.secret_key='secret'

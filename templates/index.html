@@ -27,10 +27,10 @@
 <main class="content-wrapper">
   <header class="white-text-container section-container">
     <div class="text-center">
-      <h1>I am Karim Mango</h1>
+      <h1>I am {{current_user.username}}</h1>
       <p>Cyber Security Enthusiast</p>
       <p>
-        <a class="fa-icon fa-icon-2x" href="https://facebook.com/" title="">
+        <a class="fa-icon fa-icon-2x" href={{url_for('logout')}} title="">
           <i class="fa fa-facebook"></i>
         </a>
         <a class="fa-icon fa-icon-2x" href="https://twitter.com/" title="">
