@@ -4,6 +4,10 @@ from sqlalchemy import create_engine
 from blog.helpers import salting
 from flask_bcrypt import Bcrypt
 from flask_login import login_user, current_user, LoginManager, UserMixin, logout_user
+from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
+
+
 
 
 app= Flask(__name__)
@@ -13,6 +17,11 @@ connection= engine.raw_connection()
 cursor= connection.cursor()
 db=SQLAlchemy(app)
 login_manager= LoginManager(app)
+
+migrate= Migrate(app, db)
+manager= Manager(app)
+
+manager.add_command('db', MigrateCommand)
 
 bcrypt=Bcrypt(app)
 

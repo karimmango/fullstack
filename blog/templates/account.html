@@ -2,10 +2,11 @@
 {% block body %}
     <div class="content-section">
       <div class="media">
-        
+        <img class="rounded-circle account-img" src="{{ profile_pic }}">
         <div class="media-body">
           <h2 class="account-heading">{{ current_user.username }}</h2>
           <p class="text-secondary">{{ current_user.email }}</p>
+          <p class="text-secondary">{{ current_user.biography }}</p>
         </div>
       </div>
         <form method="POST" action="" enctype="multipart/form-data">
@@ -40,6 +41,10 @@
                     {% endif %}
                 </div>
                 <div class="form-group">
+                    {{ form.biography.label(class="form-control-label") }}
+                    {{ form.biography(class="form-control form-control-lg") }}
+                </div>
+                <div class="form-group">
                     {{ form.picture.label() }}
                     {{ form.picture(class="form-control-file") }}
                     {% if form.picture.errors %}
@@ -48,6 +53,7 @@
                         {% endfor %}
                     {% endif %}
                 </div>
+
             </fieldset>
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-info") }}

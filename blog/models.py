@@ -1,5 +1,5 @@
 from datetime import datetime
-from blog import db, login_manager
+from blog import db, login_manager, app
 from flask_login import UserMixin
 
 
@@ -12,11 +12,11 @@ class User(db.Model, UserMixin):
     username= db.Column(db.String(100), nullable=False, unique=True)
     email= db.Column(db.String(120), nullable=False, unique=False)
     password= db.Column(db.String(120), nullable=False)
-    #profile_pic=db.Column(db.String(20), nullable=False, default='default.jpg')
+    profile_pic=db.Column(db.String(120), nullable=False, default='default.jpg')
     posts=db.relationship('Post', backref='author', lazy=True)
-
+    biography=db.Column(db.Text, nullable=True)
     def __repr__(self):
-        return f"User ('{self.username}', '{self.email}')"
+        return f"User ('{self.username}', '{self.email}, '{self.biography}')"
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,5 +27,4 @@ class Post(db.Model):
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}')"
-
 
