@@ -25,6 +25,7 @@ def signup():
         hashed_pass= bcrypt.generate_password_hash(salted_pass)
         user = User(username=form.username.data, email=form.email.data, password=hashed_pass)
         db.session.add(user)
+        db.session.add(user.follow(user))
         db.session.commit()
         flash('Your account has been created! You are now able to log in', 'success')
         return redirect(url_for('login'))
@@ -39,6 +40,7 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         passw=salting(form.password.data)
         if user and bcrypt.check_password_hash(user.password, passw ):
+            
             login_user(user, remember=form.remember.data)
             return redirect(url_for('index'))
         else:
@@ -85,6 +87,11 @@ def account():
     return render_template('account.html', title='Account',
                            profile_pic=profile_pic, form=form)
 
+@app.route('/account/<username>', methods=['GET'])
+def profile(username):
+    user = User.query.filter_by(username=username).first()
+    return render_template('user.html', user=user)
+
 @app.route('/post/new', methods=['GET', 'POST'])
 @login_required
 def make_post():
@@ -100,4 +107,42 @@ def make_post():
 def post(post_id):
     post= Post.query.get_or_404(post_id)
     return render_template('posts.html', title=post.title, post=post)
+
+@app.route('/follow/<username>')
+@login_required
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('User %s not found.' % username)
+        return redirect(url_for('index'))
+    if user == current_user.username:
+        flash('You can\'t follow yourself!')
+        return redirect(url_for('profile', username=username))
+    u = current_user.follow(user)
+    if u is None:
+        flash('Cannot follow ' + username + '.')
+        return redirect(url_for('profile', username=username))
+    db.session.add(u)
+    db.session.commit()
+    flash('You are now following ' + username + '!')
+    return redirect(url_for('profile', username=username))
+
+@app.route('/unfollow/<username>')
+@login_required
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('User %s not found.' % username)
+        return redirect(url_for('index'))
+    if user == current_user.username:
+        flash('You can\'t unfollow yourself!')
+        return redirect(url_for('user', username=username))
+    u = current_user.unfollow(username)
+    if u is None:
+        flash('Cannot unfollow ' + username + '.')
+        return redirect(url_for('profile', username=username))
+    db.session.add(u)
+    db.session.commit()
+    flash('You have stopped following ' + username + '.')
+    return redirect(url_for('user', username=username))
 

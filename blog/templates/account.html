@@ -9,6 +9,38 @@
           <p class="text-secondary">{{ current_user.biography }}</p>
         </div>
       </div>
+    </div>
+    <div class="content-section">
+        <div class="media">
+          <h4>Following</h4>
+          <div class="media-body">
+            <p class='text-secondary'>
+                <ul class="list-group">
+                {% for usr in current_user.followed %}
+                    <li><a href="{{url_for('profile', username=usr.username)}}">{{usr.username}}</a></li>
+                {% endfor %}
+                </ul>
+            </p>
+        </div>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="media">
+          <h4>Followers</h4>
+          <div class="media-body">
+            <p class='text-secondary'>
+                <ul class="list-group">
+                {% for usr in current_user.followers %}
+                    <li><a href="{{url_for('profile', username=usr.username)}}">{{usr.username}}</a></li>
+                {% endfor %}
+                </ul>
+            </p>
+        </div>
+        </div>
+      </div>
+  </div>
+  <div class="content-section">
+    <div class="media">
         <form method="POST" action="" enctype="multipart/form-data">
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
@@ -60,4 +92,5 @@
             </div>
         </form>
     </div>
+</div>
 {% endblock %}

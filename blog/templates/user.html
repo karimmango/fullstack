@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="content-section">
+    <div class="media">
+    <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + user.profile_pic) }}">
+      <div class="media-body">
+        <h2 class="account-heading">{{ user.username }}</h2>
+        <p class="text-secondary">{{ user.email }}</p>
+        <p class="text-secondary">{{ user.biography }}</p>
+        
+        <p>{% if not current_user.is_following(user) %}
+            <a href="{{ url_for('follow', username=user.username) }}">Follow</a>
+        {% else %}
+            <a href="{{ url_for('unfollow', username=user.username) }}">Unfollow</a>
+        {% endif %}
+        </p>
+      </div>
+      <div class="col-md-4">
+        <div class="content-section">
+          <h3>Followers</h3>
+          <p class='text-muted'>These are people who follow them.
+            <ul class="list-group">
+            {% for usr in user.followed %}
+                <li><a href="{{url_for('profile', username=usr.username)}}">{{usr.username}}</a></li>
+            {% endfor %}
+            </ul>
+          </p>
+      </div>
+  </div>
+  <div class="col-md-5">
+        <div class="content-section">
+          <h3>Following</h3>
+          <p class='text-muted'>These are people who follow them.
+            <ul class="list-group">
+            {% for usr in user.followers %}
+                <li><a href="{{url_for('profile', username=usr.username)}}">{{usr.username}}</a></li>
+            {% endfor %}
+            </ul>
+          </p>
+        </div>
+  </div>
+    </div>
+{% endblock %}
