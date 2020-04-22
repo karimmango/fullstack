@@ -7,12 +7,16 @@ from blog import app, bcrypt, db
 from blog.helpers import salting
 
 from flask_login import login_user, current_user, logout_user, login_required
-from blog.forms import RegForm, LoginForm, UpdateAccountForm, PostForm
-
-@app.route('/')
-@app.route('/home')
-def index():
-    posts= Post.query.all()
+from blog.forms import RegForm, LoginForm, UpdateAccountForm, PostForm, SearchForm
+POSTS_PER_PAGE=5
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/home', methods=['GET', 'POST'])
+@app.route('/index/<int:page>', methods=['GET', 'POST'])
+def index(page=1):
+    if current_user.is_authenticated != True:
+        return redirect(url_for('login'))
+    #posts= Post.query.all() 
+    posts= current_user.followed_posts().paginate(page, POSTS_PER_PAGE, False)
     return render_template('home.html', posts=posts)
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -88,9 +92,11 @@ def account():
                            profile_pic=profile_pic, form=form)
 
 @app.route('/account/<username>', methods=['GET'])
-def profile(username):
+@app.route('/account/<username>/<int:page>', methods=['GET'])
+def profile(username, page=1):
     user = User.query.filter_by(username=username).first()
-    return render_template('user.html', user=user)
+    posts= Post.query.filter_by(user_id=user.id).paginate(page,3,False)
+    return render_template('user.html', user=user, posts=posts)
 
 @app.route('/post/new', methods=['GET', 'POST'])
 @login_required
@@ -107,6 +113,36 @@ def make_post():
 def post(post_id):
     post= Post.query.get_or_404(post_id)
     return render_template('posts.html', title=post.title, post=post)
+
+@app.route('/post/<int:post_id>/update', methods=['GET', 'POST'])
+def update_post(post_id):
+    
+    post= Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    form= PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.content = form.content.data
+        db.session.commit()
+        flash('Your post has been updated!', 'success')
+        return redirect(url_for('post', post_id=post.id))
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+    return render_template('make_post.html', title='Update Post',
+                           form=form, legend='Update Post')
+
+@app.route("/post/<int:post_id>/delete", methods=['GET','POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('index'))
 
 @app.route('/follow/<username>')
 @login_required
@@ -146,3 +182,17 @@ def unfollow(username):
     flash('You have stopped following ' + username + '.')
     return redirect(url_for('user', username=username))
 
+
+@app.route('/search', methods=['GET', 'POST'])
+@login_required
+def search():
+    form = SearchForm()
+    if form.validate_on_submit():
+        return redirect((url_for('search_results', query=form.search.data)))
+    return render_template('search.html', form=form)
+
+@app.route('/search_results/<query>')
+@login_required
+def search_results(query):
+  results = User.query.filter_by(username=query).all()
+  return render_template('search_results.html', query=query, results=results)

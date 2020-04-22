@@ -40,5 +40,21 @@
           </p>
         </div>
   </div>
-    </div>
+</div>
+{% for post in posts.items %}
+ <article class="media content-section">
+   <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.profile_pic) }}">
+     <div class="media-body">
+        <div class="article-metadata">
+              <a class="mr-2" href="{{url_for('profile', username=post.author.username)}}">{{ post.author.username }}</a>
+               <small class="text-muted">{{ post.date.strftime('%Y-%m-%d') }}</small>
+        </div>
+              <h2><a class="article-title" href="{{url_for('post', post_id=post.id)}}">{{ post.title }}</a></h2>
+              <p class="article-content">{{ post.content }}</p>
+        </div>
+  </article>
+    {% endfor %}
+    {% if posts.has_prev %}<a href="{{ url_for('profile',username=user.username, page=posts.prev_num) }}">&lt;&lt; Newer posts</a>{% else %}&lt;&lt; Newer posts{% endif %} | 
+    {% if posts.has_next %}<a href="{{ url_for('profile',username=user.username, page=posts.next_num) }}">Older posts &gt;&gt;</a>{% else %}Older posts &gt;&gt;{% endif %}
+
 {% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block head %}
+
+<h3>Found {{ results|length }} results from your search:</h3>
+{% endblock %}
+{% block body %}
+
+{% for usr in results %}
+<article class="media content-section">
+    <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + usr.profile_pic) }}">
+    <div class="media-body">
+      <div class="article-metadata">
+        <a class="mr-2" href="{{url_for('profile', username=usr.username)}}">{{ usr.username }}</a>
+      </div>
+    </div>
+</article>
+{% endfor %}
+{% endblock %}
