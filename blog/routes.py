@@ -173,14 +173,14 @@ def unfollow(username):
     if user == current_user.username:
         flash('You can\'t unfollow yourself!')
         return redirect(url_for('user', username=username))
-    u = current_user.unfollow(username)
+    u = current_user.unfollow(user)
     if u is None:
         flash('Cannot unfollow ' + username + '.')
         return redirect(url_for('profile', username=username))
     db.session.add(u)
     db.session.commit()
     flash('You have stopped following ' + username + '.')
-    return redirect(url_for('user', username=username))
+    return redirect(url_for('profile', username=username))
 
 
 @app.route('/search', methods=['GET', 'POST'])
